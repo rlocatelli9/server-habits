@@ -129,4 +129,32 @@ export async function appRoutes(app: FastifyInstance){
       })
     }
   })
+
+  app.get('/summary', async (request, response) => {
+    // [{date:17/01, ammount: 5, completed: 1}, {date: 18/01, amount: 3, completed: 2}, ...]
+    
+    // SQL QUERY específico para SQLite
+    const summary = await prisma.$queryRaw`
+      SELECT 
+        days.id, 
+        days.date,
+        (
+          SELECT 
+            cast(count(*) as float)
+          FROM day_habits DH
+          WHERE DH.day_id = days.id
+        ) as completed,
+        (
+          SELECT 
+            cast(count(*) as float)
+          FROM habit_week_days HWD
+          JOIN habits ON habits.id = HWD.habit_id
+          WHERE 
+            HWD.week_day = cast(strftime('%w', days.date/1000.0, 'unixepoch') as int)
+            AND habits.created_at <= days.date
+        ) as amount
+      FROM days
+    `
+    return summary
+  })
 }
