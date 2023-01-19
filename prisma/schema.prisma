@@ -15,21 +15,21 @@ model Habit {
   title      String
   created_at DateTime
 
-  dayHabits     DayHabit[]
-  habitWeekdays HabitWeekday[]
+  dayHabits DayHabit[]
+  weekDays  HabitWeekDays[]
 
   @@map("habits")
 }
 
-model HabitWeekday {
+model HabitWeekDays {
   id       String @id @default(uuid())
   habit_id String
   week_day Int
 
-  habit Habit @relation(fields: [habit_id], references: [id])
+  habit Habit @relation(fields: [habit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([habit_id, week_day])
-  @@map("habit_weekdays")
+  @@map("habit_week_days")
 }
 
 model Day {
@@ -47,8 +47,8 @@ model DayHabit {
   day_id   String
   habit_id String
 
-  day   Day   @relation(fields: [day_id], references: [id])
-  habit Habit @relation(fields: [habit_id], references: [id])
+  day   Day   @relation(fields: [day_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  habit Habit @relation(fields: [habit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([day_id, habit_id])
   @@map("day_habits")
