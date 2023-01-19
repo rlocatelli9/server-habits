@@ -26,7 +26,7 @@ export async function appRoutes(app: FastifyInstance){
       data:{
         title,
         created_at: today,
-        habitWeekdays: {
+        weekDays: {
           create: weekdays.map(day => {
             return {
               week_day: day
@@ -54,7 +54,7 @@ export async function appRoutes(app: FastifyInstance){
         created_at: {
           lte: date
         },
-        habitWeekdays: {
+        weekDays: {
           some: {
             week_day: weekDay
           }
@@ -76,13 +76,57 @@ export async function appRoutes(app: FastifyInstance){
       return dayHabit.habit_id
     })
 
-
     return {
       possibleHabits,
       completedHabits
+    }  
+
+  })
+
+  app.patch('/habits/:id/toggle', async (request, response) => {
+    const completeToggleHabitParams = z.object({
+      id: z.string().uuid()
+    })
+    const {id} = completeToggleHabitParams.parse(request.params)
+    const today = dayjs().startOf('day').toDate()
+    let day = await prisma.day.findUnique({
+      where: {
+        date: today
+      }
+    })
+
+    if(!day) {
+      day = await prisma.day.create({
+        data:{
+          date: today,
+        }
+      })
     }
-    
 
+    const dayHabit = await prisma.dayHabit.findUnique({
+      where: {
+        day_id_habit_id: {
+          day_id: day.id,
+          habit_id: id,
+        }
+      }
+    })
 
+    if(dayHabit){
+      // remover o habito que estava como completo
+      await prisma.dayHabit.delete({
+        where: {
+          id: dayHabit.id,
+        }
+      })
+    } else { 
+      // completar o habito no dia
+      await prisma.dayHabit.create({
+        data: {
+          day_id: day.id,
+          habit_id: id
+        }
+      })
+    }
   })
 }
