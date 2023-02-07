@@ -17,6 +17,7 @@ model Habit {
 
   dayHabits DayHabit[]
   weekDays  HabitWeekDays[]
+  UserHabit UserHabit[]
 
   @@map("habits")
 }
@@ -52,4 +53,28 @@ model DayHabit {
 
   @@unique([day_id, habit_id])
   @@map("day_habits")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  email      String   @unique
+  password   String
+  name       String?
+
+  UserHabit UserHabit[]
+
+  @@map("users")
+}
+
+model UserHabit {
+  id       String @id @default(uuid())
+  user_id  String
+  habit_id String
+
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  habit Habit @relation(fields: [habit_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([user_id, habit_id])
+  @@map("user_habits")
 }

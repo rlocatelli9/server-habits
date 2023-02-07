@@ -1,6 +1,8 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import { appRoutes } from './routes'
+// import { notificationsRoutes } from './routes/notifications-routes'
+import { usersRoutes } from './routes/users-routes'
 
 const fastify = Fastify()
 
@@ -9,6 +11,8 @@ fastify.register(cors,{
 })
 
 fastify.register(appRoutes)
+// fastify.register(notificationsRoutes)
+fastify.register(usersRoutes)
 
 /**
  * Run the server!
